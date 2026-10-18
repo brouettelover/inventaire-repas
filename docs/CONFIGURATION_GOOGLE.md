@@ -14,6 +14,7 @@ L'application demande uniquement la portée `drive.file` : elle ne voit que les 
 
 1. Menu ☰ → **API et services** → **Bibliothèque**.
 2. Cherche **Google Docs API**, ouvre-la, clique sur **Activer**.
+3. Reviens à la bibliothèque, cherche **Google Drive API** et active-la aussi. Elle sert à partager le document créé avec une autre personne.
 
 ## 3. Écran de consentement OAuth
 
@@ -23,7 +24,7 @@ Selon la version de la console, cette partie s'appelle **Écran de consentement 
 2. **Informations sur l'application** : nom `Inventaire repas`, ton adresse e-mail comme adresse d'assistance.
 3. **Audience** : choisis **Externe**.
 4. **Coordonnées** : ton adresse e-mail. Accepte les conditions et termine.
-5. Dans **Audience** (ou **Utilisateurs tests**), clique sur **Ajouter des utilisateurs** et ajoute ton adresse Gmail. Tant que l'application reste en mode « Test », seuls ces comptes peuvent se connecter, ce qui suffit pour un usage personnel.
+5. Dans **Audience** (ou **Utilisateurs tests**), clique sur **Ajouter des utilisateurs** et ajoute ton adresse Gmail, ainsi que celle de ta copine si elle exporte aussi depuis son téléphone. Tant que l'application reste en mode « Test », seuls ces comptes peuvent se connecter, ce qui suffit pour un usage personnel.
 6. Dans **Accès aux données** (ou **Champs d'application**), clique sur **Ajouter ou supprimer des champs d'application** et coche `.../auth/drive.file`. Enregistre.
 
 ## 4. Récupérer l'empreinte SHA-1 du keystore de debug (Windows)
@@ -86,6 +87,40 @@ Puis recompile et installe :
 
 Sans compte connecté, sans réseau ou en cas d'erreur, l'application propose de partager le même contenu en texte (WhatsApp, e-mail, Keep…).
 
+### Partager le Google Doc avec une autre personne
+
+1. **Réglages** → **Partage** : saisis son adresse Gmail, puis **Enregistrer**.
+2. À chaque export, la case « Partager le Google Doc avec … » est cochée par défaut. Elle reçoit un e-mail de Google avec le lien et peut modifier le document (cocher les courses, par exemple).
+3. Si le partage échoue, le document est quand même créé et l'application l'indique. Tu peux alors le partager à la main depuis Google Docs.
+
+## 9. Recettes partagées entre deux téléphones
+
+Les recettes sont échangées par un fichier `recettes-inventaire-repas.json` posé sur Google Drive. Aucune configuration de la Cloud Console n'est nécessaire : le fichier passe par le sélecteur de fichiers d'Android, comme une pièce jointe.
+
+**Une seule fois, sur ton téléphone :**
+
+1. Écran **Recettes** → menu ⋮ → **Exporter vers un fichier…**
+2. Dans le sélecteur, ouvre le menu ☰ et choisis **Drive** (ton compte), puis **Enregistrer**.
+3. Dans l'application Google Drive, partage ce fichier avec ta copine en tant qu'**Éditeur**.
+
+**Une seule fois, sur son téléphone :**
+
+1. Dans l'application Google Drive, ouvre **Partagés avec moi**, appuie sur ⋮ à côté du fichier → **Ajouter un raccourci dans Drive** → **Mon Drive**. Le sélecteur de fichiers d'Android n'affiche pas toujours les fichiers partagés ; le raccourci le rend visible.
+2. Dans l'application : **Recettes** → ⋮ → **Importer un fichier…** → **Drive** → le fichier.
+
+**Ensuite, sur les deux téléphones :** l'icône ⟳ de l'écran Recettes synchronise. Elle lit le fichier, ajoute ou met à jour les recettes, puis réécrit le fichier avec le résultat, pour que l'autre téléphone récupère tes changements à sa prochaine synchronisation.
+
+Règles de fusion :
+
+- Les recettes sont reconnues par leur nom (sans tenir compte des majuscules et des accents).
+- Quand une recette existe des deux côtés, la version modifiée le plus récemment gagne.
+- Supprimer une recette sur un téléphone ne la supprime pas sur l'autre : elle reviendrait à la synchronisation suivante. Supprime-la sur les deux téléphones, puis synchronise.
+- Le menu, le stock et les listes de courses restent propres à chaque téléphone.
+
+Drive met parfois quelques secondes à envoyer le fichier : si une modification de l'autre téléphone n'apparaît pas, attends un peu et synchronise à nouveau. Les deux téléphones doivent avoir une heure correcte, puisque c'est la date de modification qui départage.
+
+Le même fichier sert aussi de sauvegarde : tes recettes sont dans Drive même si tu désinstalles l'application.
+
 ## Dépannage
 
 | Symptôme | Cause probable |
@@ -94,4 +129,7 @@ Sans compte connecté, sans réseau ou en cas d'erreur, l'application propose de
 | « Accès bloqué : cette application n'a pas été validée » | Ton adresse n'est pas dans les utilisateurs tests (étape 3.5). |
 | « Google Docs API has not been used in project… » (403) | L'API Google Docs n'est pas activée (étape 2), ou l'activation date de moins de quelques minutes. |
 | Le bouton « Se connecter » est grisé | `google.webClientId` est absent de `local.properties`, ou le projet n'a pas été recompilé. |
+| « Google Drive API has not been used in project… » (403) au partage | L'API Google Drive n'est pas activée (étape 2.3). |
+| « Ce fichier est en lecture seule » à la synchronisation | Le fichier Drive est partagé en lecture seule : donne le rôle **Éditeur**. |
+| Le fichier partagé n'apparaît pas dans le sélecteur | Ajoute un raccourci dans **Mon Drive** depuis l'application Google Drive (étape 9). |
 | Ça marche sur un PC et pas sur un autre | Chaque PC a son propre keystore de debug : ajoute la SHA-1 de chaque machine (un identifiant Android par empreinte). |

@@ -18,6 +18,8 @@ data class Recipe(
     val freshness: Freshness,
     val ingredients: List<RecipeIngredient>,
     val steps: List<String>,
+    /** Date de dernière modification (millisecondes), pour fusionner les recettes partagées ; 0 = inconnue. */
+    val updatedAt: Long = 0,
 ) {
     init {
         require(baseServings > 0) { "Les portions de base doivent être positives" }

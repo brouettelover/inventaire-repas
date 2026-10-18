@@ -18,6 +18,8 @@ data class RecipeEntity(
     val freshness: Freshness,
     /** 12 bits, bit 0 = janvier ; 4095 = toute l'année. */
     @ColumnInfo(name = "season_mask") val seasonMask: Int,
+    /** Dernière modification (millisecondes), pour la fusion des fichiers de recettes partagés. */
+    @ColumnInfo(name = "updated_at", defaultValue = "0") val updatedAt: Long = 0,
 )
 
 @Entity(

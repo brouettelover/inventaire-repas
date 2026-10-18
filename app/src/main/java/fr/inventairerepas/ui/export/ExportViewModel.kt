@@ -23,6 +23,11 @@ data class ShareContent(val title: String, val text: String)
 data class ExportUiState(
     val dialogOpen: Boolean = false,
     val includeDetails: Boolean = false,
+    /** Adresse de partage configurée dans les réglages ; null = pas de partage proposé. */
+    val shareWithEmail: String? = null,
+    val shareWithPartner: Boolean = true,
+    /** Avertissement si le document est créé mais que le partage a échoué. */
+    val shareWarning: String? = null,
     val busy: Boolean = false,
     /** Compte à autoriser pour Google Docs : l'écran lance alors l'Authorization API. */
     val authorizeAccount: String? = null,
@@ -47,12 +52,18 @@ class ExportViewModel @Inject constructor(
 
     fun open(weekStart: LocalDate) {
         this.weekStart = weekStart
-        _state.update { it.copy(dialogOpen = true, fallbackReason = null, documentUrl = null) }
+        _state.update { it.copy(dialogOpen = true, fallbackReason = null, documentUrl = null, shareWarning = null) }
+        viewModelScope.launch {
+            val email = settings.settings.first().shareWithEmail
+            _state.update { it.copy(shareWithEmail = email) }
+        }
     }
 
-    fun dismiss() = _state.update { ExportUiState(includeDetails = it.includeDetails) }
+    fun dismiss() = _state.update { it.reset() }
 
     fun setIncludeDetails(include: Boolean) = _state.update { it.copy(includeDetails = include) }
+
+    fun setShareWithPartner(share: Boolean) = _state.update { it.copy(shareWithPartner = share) }
 
     /** Vérifie la connexion et le compte, puis demande à l'écran d'obtenir l'autorisation Google Docs. */
     fun exportToGoogleDocs() {
@@ -71,9 +82,17 @@ class ExportViewModel @Inject constructor(
         val start = weekStart ?: return
         _state.update { it.copy(authorizeAccount = null, busy = true) }
         viewModelScope.launch {
-            runCatching { docs.create(token, document(start)) }
-                .onSuccess { url -> _state.update { it.copy(busy = false, documentUrl = url) } }
-                .onFailure { error -> fallback("Échec de l'export : ${error.userMessage()}") }
+            val created = runCatching { docs.create(token, document(start)) }.getOrElse { error ->
+                fallback("Échec de l'export : ${error.userMessage()}")
+                return@launch
+            }
+            val shareWith = _state.value.shareWithEmail?.takeIf { _state.value.shareWithPartner }
+            val warning = shareWith?.let { email ->
+                runCatching { docs.share(token, created.id, email) }
+                    .exceptionOrNull()
+                    ?.let { "Document créé, mais pas partagé avec $email : ${it.userMessage()}" }
+            }
+            _state.update { it.copy(busy = false, documentUrl = created.url, shareWarning = warning) }
         }
     }
 
@@ -92,7 +111,11 @@ class ExportViewModel @Inject constructor(
         }
     }
 
-    fun shareLaunched() = _state.update { ExportUiState(includeDetails = it.includeDetails) }
+    fun shareLaunched() = _state.update { it.reset() }
+
+    /** Referme le dialogue en gardant les choix de l'utilisateur. */
+    private fun ExportUiState.reset() =
+        ExportUiState(includeDetails = includeDetails, shareWithPartner = shareWithPartner)
 
     private suspend fun document(start: LocalDate): ExportDocument = buildExport(start, _state.value.includeDetails)
 

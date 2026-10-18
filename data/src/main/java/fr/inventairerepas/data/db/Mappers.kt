@@ -39,6 +39,7 @@ fun RecipeWithDetails.toDomain() = Recipe(
         .sortedBy { it.line.position }
         .map { RecipeIngredient(it.ingredient.toDomain(), Quantity(it.line.amount, it.line.unit)) },
     steps = steps.sortedBy { it.position }.map { it.text },
+    updatedAt = recipe.updatedAt,
 )
 
 fun Recipe.toEntity() = RecipeEntity(
@@ -49,6 +50,7 @@ fun Recipe.toEntity() = RecipeEntity(
     cookMinutes = cookMinutes,
     freshness = freshness,
     seasonMask = seasonality.toMask(),
+    updatedAt = updatedAt,
 )
 
 /** Lignes d'ingrédients, à partir des identifiants du catalogue déjà résolus dans le même ordre. */

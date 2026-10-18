@@ -55,6 +55,10 @@ data class Settings(
         if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) null else 30
     },
     val googleAccountEmail: String? = null,
+    /** Adresse Google avec qui partager chaque Google Doc exporté (modification autorisée) ; null = aucun partage. */
+    val shareWithEmail: String? = null,
+    /** Fichier de recettes partagé choisi pour « Synchroniser » (URI de document Android) ; null = aucun. */
+    val recipesFileUri: String? = null,
 ) {
     fun maxMinutesFor(day: DayOfWeek): Int? = maxMinutesByDay[day]
 }

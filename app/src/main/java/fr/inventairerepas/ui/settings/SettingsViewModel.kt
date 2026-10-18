@@ -33,6 +33,8 @@ class SettingsViewModel @Inject constructor(
 
     fun setGoogleAccount(email: String?) = update { it.copy(googleAccountEmail = email) }
 
+    fun setShareWithEmail(email: String?) = update { it.copy(shareWithEmail = email?.trim()?.takeIf(String::isNotEmpty)) }
+
     private fun update(transform: (Settings) -> Settings) {
         viewModelScope.launch { repository.update(transform) }
     }

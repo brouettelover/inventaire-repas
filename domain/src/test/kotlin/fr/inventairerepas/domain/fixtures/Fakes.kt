@@ -25,8 +25,9 @@ class FakeRecipeRepository(var recipes: List<Recipe> = emptyList()) : RecipeRepo
     override suspend fun getAll() = recipes
     override suspend fun get(recipeId: Long) = recipes.firstOrNull { it.id == recipeId }
     override suspend fun save(recipe: Recipe): Long {
-        recipes = recipes.filterNot { it.id == recipe.id } + recipe
-        return recipe.id
+        val saved = if (recipe.id == 0L) recipe.copy(id = (recipes.maxOfOrNull { it.id } ?: 0) + 1) else recipe
+        recipes = recipes.filterNot { it.id == saved.id } + saved
+        return saved.id
     }
     override suspend fun delete(recipeId: Long) {
         recipes = recipes.filterNot { it.id == recipeId }

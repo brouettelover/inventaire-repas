@@ -16,6 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -84,6 +85,7 @@ fun ExportAction(weekStart: LocalDate?, viewModel: ExportViewModel = hiltViewMod
         ExportDialog(
             state = state,
             onIncludeDetails = viewModel::setIncludeDetails,
+            onShareWithPartner = viewModel::setShareWithPartner,
             onGoogleDocs = viewModel::exportToGoogleDocs,
             onShareText = viewModel::prepareShare,
             onOpenDocument = { url ->
@@ -99,6 +101,7 @@ fun ExportAction(weekStart: LocalDate?, viewModel: ExportViewModel = hiltViewMod
 private fun ExportDialog(
     state: ExportUiState,
     onIncludeDetails: (Boolean) -> Unit,
+    onShareWithPartner: (Boolean) -> Unit,
     onGoogleDocs: () -> Unit,
     onShareText: () -> Unit,
     onOpenDocument: (String) -> Unit,
@@ -111,7 +114,15 @@ private fun ExportDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
-                    url != null -> Text("Le menu et les listes de courses sont dans un nouveau Google Doc de ton Drive.")
+                    url != null -> {
+                        Text("Le menu et les listes de courses sont dans un nouveau Google Doc de ton Drive.")
+                        val email = state.shareWithEmail
+                        val warning = state.shareWarning
+                        when {
+                            warning != null -> Text(warning, color = MaterialTheme.colorScheme.error)
+                            email != null && state.shareWithPartner -> Text("Partagé avec $email, qui peut le modifier.")
+                        }
+                    }
                     state.busy -> Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator()
                         Text("  Export en cours…")
@@ -121,6 +132,12 @@ private fun ExportDialog(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(checked = state.includeDetails, onCheckedChange = onIncludeDetails)
                             Text("Inclure le détail des recettes")
+                        }
+                        state.shareWithEmail?.let { email ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = state.shareWithPartner, onCheckedChange = onShareWithPartner)
+                                Text("Partager le Google Doc avec $email")
+                            }
                         }
                         state.fallbackReason?.let {
                             Text(it)

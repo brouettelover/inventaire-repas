@@ -2,6 +2,7 @@ package fr.inventairerepas.data.settings
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -28,6 +29,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val firstShoppingDay = stringPreferencesKey("first_shopping_day")
         val defaultServings = intPreferencesKey("default_servings")
         val googleAccount = stringPreferencesKey("google_account")
+        val shareWith = stringPreferencesKey("share_with_email")
+        val recipesFile = stringPreferencesKey("recipes_file_uri")
         fun maxMinutes(day: DayOfWeek) = intPreferencesKey("max_minutes_${day.name.lowercase()}")
     }
 
@@ -43,13 +46,14 @@ class DataStoreSettingsRepository @Inject constructor(
             DayOfWeek.entries.forEach { day ->
                 prefs[Keys.maxMinutes(day)] = updated.maxMinutesFor(day) ?: UNLIMITED
             }
-            val account = updated.googleAccountEmail
-            if (account == null) {
-                prefs.remove(Keys.googleAccount)
-            } else {
-                prefs[Keys.googleAccount] = account
-            }
+            prefs.putOrRemove(Keys.googleAccount, updated.googleAccountEmail)
+            prefs.putOrRemove(Keys.shareWith, updated.shareWithEmail?.trim()?.takeIf { it.isNotEmpty() })
+            prefs.putOrRemove(Keys.recipesFile, updated.recipesFileUri)
         }
+    }
+
+    private fun MutablePreferences.putOrRemove(key: Preferences.Key<String>, value: String?) {
+        if (value == null) remove(key) else this[key] = value
     }
 
     private fun Preferences.toSettings() = Settings(
@@ -63,6 +67,8 @@ class DataStoreSettingsRepository @Inject constructor(
             }
         },
         googleAccountEmail = this[Keys.googleAccount],
+        shareWithEmail = this[Keys.shareWith],
+        recipesFileUri = this[Keys.recipesFile],
     )
 
     private companion object {

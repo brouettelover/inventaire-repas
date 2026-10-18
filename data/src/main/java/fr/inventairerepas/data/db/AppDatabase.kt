@@ -3,6 +3,8 @@ package fr.inventairerepas.data.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.inventairerepas.data.db.dao.IngredientDao
 import fr.inventairerepas.data.db.dao.PlanDao
 import fr.inventairerepas.data.db.dao.RecipeDao
@@ -30,7 +32,7 @@ import fr.inventairerepas.data.db.entity.WeekPlanEntity
         ShoppingListEntity::class,
         ShoppingItemEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -43,5 +45,15 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "inventaire-repas.db"
+
+        /** v2 : date de modification des recettes (fusion des fichiers partagés). */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE recipe ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        /** Toutes les migrations, dans l'ordre. Chaque changement de schéma en ajoute une : aucune donnée n'est jamais effacée. */
+        val MIGRATIONS = arrayOf(MIGRATION_1_2)
     }
 }

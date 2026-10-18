@@ -36,6 +36,8 @@ import fr.inventairerepas.ui.common.AppScaffold
 import fr.inventairerepas.ui.common.dayLabel
 import fr.inventairerepas.ui.common.formatMinutes
 import fr.inventairerepas.ui.common.label
+import fr.inventairerepas.ui.recipe.sync.RecipeSyncMenu
+import fr.inventairerepas.ui.recipe.sync.RecipeSyncViewModel
 
 /**
  * Liste des recettes avec filtres. Si [onBack] est fourni, l'écran est ouvert depuis le menu
@@ -47,8 +49,10 @@ fun RecipeListScreen(
     onCreateRecipe: () -> Unit,
     onBack: (() -> Unit)?,
     viewModel: RecipeListViewModel = hiltViewModel(),
+    syncViewModel: RecipeSyncViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val syncState by syncViewModel.state.collectAsStateWithLifecycle()
     val pickDate = state.pickDate
 
     LaunchedEffect(state.picked) {
@@ -58,8 +62,13 @@ fun RecipeListScreen(
     AppScaffold(
         title = if (pickDate != null) "Choisir pour ${pickDate.dayLabel()}" else "Recettes",
         onBack = onBack,
-        message = state.message,
-        onMessageShown = viewModel::messageShown,
+        message = state.message ?: syncState.message,
+        onMessageShown = {
+            if (state.message != null) viewModel.messageShown() else syncViewModel.messageShown()
+        },
+        actions = {
+            if (pickDate == null) RecipeSyncMenu(syncState, syncViewModel)
+        },
         floatingActionButton = {
             if (pickDate == null) {
                 FloatingActionButton(onClick = onCreateRecipe) {

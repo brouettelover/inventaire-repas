@@ -213,6 +213,7 @@ class RecipeEditViewModel @Inject constructor(
             freshness = s.freshness,
             ingredients = lines,
             steps = s.steps.map { it.text.trim() }.filter { it.isNotEmpty() },
+            updatedAt = System.currentTimeMillis(),
         )
     }
 }

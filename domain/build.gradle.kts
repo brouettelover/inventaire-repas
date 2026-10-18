@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     `java-library`
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 java {
@@ -19,6 +20,7 @@ kotlin {
 dependencies {
     implementation(libs.javax.inject)
     api(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter)

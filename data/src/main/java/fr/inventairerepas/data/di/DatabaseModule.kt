@@ -17,7 +17,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME).build()
+        Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
+            .addMigrations(*AppDatabase.MIGRATIONS)
+            .build()
 
     @Provides
     fun provideIngredientDao(db: AppDatabase) = db.ingredientDao()

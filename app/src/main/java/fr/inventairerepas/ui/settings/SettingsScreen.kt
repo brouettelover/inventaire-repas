@@ -1,5 +1,6 @@
 package fr.inventairerepas.ui.settings
 
+import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,6 +93,38 @@ fun SettingsScreen(
             HorizontalDivider()
             Text("Compte Google", style = MaterialTheme.typography.titleMedium)
             GoogleAccountSection(email = settings.googleAccountEmail, onAccountChange = viewModel::setGoogleAccount)
+
+            HorizontalDivider()
+            Text("Partage", style = MaterialTheme.typography.titleMedium)
+            if (!state.loading) {
+                ShareEmailField(current = settings.shareWithEmail, onSave = viewModel::setShareWithEmail)
+            }
+        }
+    }
+}
+
+/** Adresse Gmail avec qui partager chaque Google Doc exporté. */
+@Composable
+private fun ShareEmailField(current: String?, onSave: (String?) -> Unit) {
+    var text by remember(current) { mutableStateOf(current.orEmpty()) }
+    val trimmed = text.trim()
+    val valid = trimmed.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(trimmed).matches()
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Partager les Google Docs avec") },
+            placeholder = { Text("adresse@gmail.com") },
+            singleLine = true,
+            isError = !valid,
+            supportingText = {
+                Text(if (valid) "Cette personne pourra modifier les documents exportés." else "Adresse e-mail invalide")
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        )
+        if (trimmed != current.orEmpty()) {
+            Button(enabled = valid, onClick = { onSave(trimmed.ifEmpty { null }) }) { Text("Enregistrer") }
         }
     }
 }

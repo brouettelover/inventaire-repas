@@ -13,6 +13,8 @@ import javax.inject.Inject
 
 class GoogleDocsException(message: String) : IOException(message)
 
+data class CreatedDocument(val id: String, val url: String)
+
 /**
  * Client minimal de l'API Google Docs : crée un document dans le Drive de l'utilisateur
  * puis y insère le contenu exporté. L'accès se fait avec un jeton OAuth (portée drive.file)
@@ -20,13 +22,27 @@ class GoogleDocsException(message: String) : IOException(message)
  */
 class GoogleDocsClient @Inject constructor() {
 
-    /** Crée le document et renvoie son adresse d'édition. */
-    suspend fun create(accessToken: String, document: ExportDocument): String = withContext(Dispatchers.IO) {
+    /** Crée le document et renvoie son identifiant et son adresse d'édition. */
+    suspend fun create(accessToken: String, document: ExportDocument): CreatedDocument = withContext(Dispatchers.IO) {
         val created = post(accessToken, "$BASE_URL/documents", JSONObject().put("title", document.title))
         val documentId = created.getString("documentId")
         val plan = DocsRequestPlan.from(document)
         post(accessToken, "$BASE_URL/documents/$documentId:batchUpdate", JSONObject().put("requests", requests(plan)))
-        "https://docs.google.com/document/d/$documentId/edit"
+        CreatedDocument(documentId, "https://docs.google.com/document/d/$documentId/edit")
+    }
+
+    /**
+     * Donne à [email] le droit de modifier le document (API Drive, autorisée par la portée drive.file
+     * car le document a été créé par l'application). Google envoie un e-mail avec le lien.
+     */
+    suspend fun share(accessToken: String, documentId: String, email: String) = withContext(Dispatchers.IO) {
+        post(
+            accessToken,
+            "$DRIVE_URL/files/$documentId/permissions?sendNotificationEmail=true",
+            JSONObject().put("role", "writer").put("type", "user").put("emailAddress", email),
+            api = "Google Drive",
+        )
+        Unit
     }
 
     private fun requests(plan: DocsRequestPlan): JSONArray {
@@ -61,7 +77,7 @@ class GoogleDocsClient @Inject constructor() {
 
     private fun range(start: Int, end: Int) = JSONObject().put("startIndex", start).put("endIndex", end)
 
-    private fun post(accessToken: String, url: String, body: JSONObject): JSONObject {
+    private fun post(accessToken: String, url: String, body: JSONObject, api: String = "Google Docs"): JSONObject {
         val connection = URL(url).openConnection() as HttpURLConnection
         try {
             connection.requestMethod = "POST"
@@ -76,7 +92,7 @@ class GoogleDocsClient @Inject constructor() {
             val stream = if (code in 200..299) connection.inputStream else connection.errorStream
             val response = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
             if (code !in 200..299) {
-                throw GoogleDocsException("L'API Google Docs a répondu $code : ${errorMessage(response)}")
+                throw GoogleDocsException("L'API $api a répondu $code : ${errorMessage(response)}")
             }
             return if (response.isBlank()) JSONObject() else JSONObject(response)
         } finally {
@@ -89,6 +105,7 @@ class GoogleDocsClient @Inject constructor() {
 
     private companion object {
         const val BASE_URL = "https://docs.googleapis.com/v1"
+        const val DRIVE_URL = "https://www.googleapis.com/drive/v3"
         const val TIMEOUT_MS = 20_000
     }
 }

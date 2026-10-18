@@ -22,5 +22,9 @@ Kotlin, Jetpack Compose (Material 3), MVVM, Room, Hilt, Navigation Compose. minS
 
 ## Export Google Docs
 
-L'export crée un Google Doc avec le menu de la semaine et les deux listes de courses, et en option le détail des recettes. La configuration côté Google Cloud Console est décrite pas à pas dans [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md). Sans configuration ni compte connecté, l'application propose un partage en texte.
+L'export crée un Google Doc avec le menu de la semaine et les deux listes de courses, et en option le détail des recettes. La configuration côté Google Cloud Console est décrite pas à pas dans [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md). Sans configuration ni compte connecté, l'application propose un partage en texte. Le document peut être partagé automatiquement avec une seconde adresse (Réglages → Partage).
+
+## Recettes partagées
+
+L'écran Recettes exporte et importe les recettes dans un fichier JSON (par exemple sur Google Drive), et le bouton ⟳ synchronise ce fichier entre deux téléphones : la version modifiée le plus récemment gagne, les suppressions ne sont pas propagées. Mode d'emploi : section 9 de [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md).
 
