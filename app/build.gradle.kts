@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +9,12 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+// Identifiant client OAuth « Application Web », lu depuis local.properties (non versionné).
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+val googleWebClientId: String = localProperties.getProperty("google.webClientId", "")
 
 android {
     namespace = "fr.inventairerepas"
@@ -19,6 +26,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -38,6 +47,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -63,6 +73,12 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.id)
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

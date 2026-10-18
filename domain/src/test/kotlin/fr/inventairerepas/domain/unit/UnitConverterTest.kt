@@ -111,4 +111,18 @@ class UnitConverterTest {
     fun `une quantite negative est refusee`() {
         assertThrows<IllegalArgumentException> { Quantity(-1.0, GRAM) }
     }
+
+    @Test
+    fun `affichage lisible des unites metriques, cuilleres et pieces gardees`() {
+        assertQuantity(1.2, KILOGRAM, UnitConverter.readable(Quantity(1200.0, GRAM)))
+        assertQuantity(500.0, MILLILITER, UnitConverter.readable(Quantity(50.0, CENTILITER)))
+        assertQuantity(4.0, TABLESPOON, UnitConverter.readable(Quantity(4.0, TABLESPOON)))
+        assertQuantity(12.0, PIECE, UnitConverter.readable(Quantity(12.0, PIECE)))
+    }
+
+    @Test
+    fun `une unite metrique commune est ramenee a la plus lisible`() {
+        val result = UnitConverter.aggregate(listOf(Quantity(600.0, GRAM), Quantity(600.0, GRAM)))
+        assertQuantity(1.2, KILOGRAM, result.getValue(UnitFamily.MASS).toDisplayQuantity())
+    }
 }

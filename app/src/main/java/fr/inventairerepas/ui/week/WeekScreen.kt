@@ -53,6 +53,7 @@ import fr.inventairerepas.ui.common.WeekSelector
 import fr.inventairerepas.ui.common.dayLabel
 import fr.inventairerepas.ui.common.formatMinutes
 import fr.inventairerepas.ui.common.servingsLabel
+import fr.inventairerepas.ui.export.ExportAction
 import java.time.LocalDate
 
 @Composable
@@ -61,7 +62,6 @@ fun WeekScreen(
     onPickRecipe: (weekStart: LocalDate, date: LocalDate) -> Unit,
     onOpenShopping: () -> Unit,
     onOpenSettings: () -> Unit,
-    exportAction: @Composable () -> Unit = {},
     viewModel: WeekViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -74,7 +74,7 @@ fun WeekScreen(
             IconButton(onClick = onOpenShopping) {
                 Icon(Icons.Filled.ShoppingCart, contentDescription = "Listes de courses")
             }
-            exportAction()
+            ExportAction(weekStart = state.weekStart)
             IconButton(onClick = onOpenSettings) {
                 Icon(Icons.Filled.Settings, contentDescription = "Réglages")
             }

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.inventairerepas.domain.portion.PortionScaler
+import fr.inventairerepas.domain.unit.UnitConverter
 import fr.inventairerepas.ui.common.AppScaffold
 import fr.inventairerepas.ui.common.ServingsStepper
 import fr.inventairerepas.ui.common.dayLabel
@@ -99,10 +100,11 @@ fun RecipeDetailScreen(
             HorizontalDivider()
             Text("Ingrédients", style = MaterialTheme.typography.titleMedium)
             PortionScaler.scale(recipe, state.servings).forEach { line ->
+                val quantity = UnitConverter.readable(line.quantity)
                 Row(Modifier.fillMaxWidth()) {
                     Text(line.ingredient.name, modifier = Modifier.weight(1f))
                     Text(
-                        if (line.ingredient.alwaysInStock) "${line.quantity.label()} (toujours en stock)" else line.quantity.label(),
+                        if (line.ingredient.alwaysInStock) "${quantity.label()} (toujours en stock)" else quantity.label(),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }

@@ -19,3 +19,8 @@ Kotlin, Jetpack Compose (Material 3), MVVM, Room, Hilt, Navigation Compose. minS
 .\gradlew.bat assembleDebug    # APK de debug
 .\gradlew.bat installDebug     # installation sur l'appareil ou l'émulateur
 ```
+
+## Export Google Docs
+
+L'export crée un Google Doc avec le menu de la semaine et les deux listes de courses, et en option le détail des recettes. La configuration côté Google Cloud Console est décrite pas à pas dans [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md). Sans configuration ni compte connecté, l'application propose un partage en texte.
+

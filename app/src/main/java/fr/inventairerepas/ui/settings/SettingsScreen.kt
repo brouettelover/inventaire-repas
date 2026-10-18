@@ -29,6 +29,7 @@ import fr.inventairerepas.ui.common.AppScaffold
 import fr.inventairerepas.ui.common.ServingsStepper
 import fr.inventairerepas.ui.common.formatMinutes
 import fr.inventairerepas.ui.common.label
+import fr.inventairerepas.ui.export.GoogleAccountSection
 import java.time.DayOfWeek
 
 private val DURATION_OPTIONS: List<Int?> = listOf(null, 15, 20, 30, 45, 60, 90, 120)
@@ -38,7 +39,6 @@ private fun durationLabel(minutes: Int?) = minutes?.let { "≤ ${formatMinutes(i
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    googleAccountSection: @Composable () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -87,7 +87,7 @@ fun SettingsScreen(
 
             HorizontalDivider()
             Text("Compte Google", style = MaterialTheme.typography.titleMedium)
-            googleAccountSection()
+            GoogleAccountSection(email = settings.googleAccountEmail, onAccountChange = viewModel::setGoogleAccount)
         }
     }
 }

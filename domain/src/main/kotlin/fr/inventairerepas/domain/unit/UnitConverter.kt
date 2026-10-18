@@ -7,7 +7,7 @@ class IncompatibleUnitsException(from: MeasureUnit, to: MeasureUnit) :
  * Somme de quantités d'une même famille, gardée en unité de base.
  *
  * [sameUnit] est l'unité commune quand toutes les quantités additionnées
- * avaient la même unité, ce qui permet de l'afficher telle quelle
+ * avaient la même unité, ce qui permet de garder les cuillères à l'affichage
  * (2 c. à soupe restent 2 c. à soupe plutôt que 30 ml).
  */
 data class AggregatedQuantity(
@@ -15,7 +15,7 @@ data class AggregatedQuantity(
     val baseAmount: Double,
     val sameUnit: MeasureUnit?,
 ) {
-    /** Quantité à afficher : unité commune si elle existe, sinon l'unité la plus lisible. */
+    /** Quantité à afficher : cuillères ou pièces communes gardées, sinon l'unité la plus lisible. */
     fun toDisplayQuantity(): Quantity = UnitConverter.toDisplay(baseAmount, family, sameUnit)
 
     operator fun plus(other: AggregatedQuantity): AggregatedQuantity {
@@ -59,8 +59,16 @@ object UnitConverter {
         UnitFamily.COUNT -> MeasureUnit.PIECE
     }
 
+    /**
+     * Quantité lisible : les cuillères sont gardées telles quelles (« 3 c. à soupe »), les unités
+     * métriques sont ramenées à la plus lisible (1200 g → 1,2 kg, 50 cl → 500 ml).
+     */
     fun toDisplay(baseAmount: Double, family: UnitFamily, preferred: MeasureUnit? = null): Quantity {
-        val unit = preferred?.takeIf { it.family == family } ?: bestUnit(baseAmount, family)
+        val unit = preferred?.takeIf { it.family == family && it in KEPT_UNITS } ?: bestUnit(baseAmount, family)
         return Quantity(baseAmount / unit.toBase, unit)
     }
+
+    fun readable(quantity: Quantity): Quantity = toDisplay(quantity.baseAmount, quantity.family, quantity.unit)
+
+    private val KEPT_UNITS = setOf(MeasureUnit.TEASPOON, MeasureUnit.TABLESPOON, MeasureUnit.PIECE)
 }
