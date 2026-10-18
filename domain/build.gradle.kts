@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    `java-library`
     alias(libs.plugins.kotlin.jvm)
 }
 
@@ -17,10 +18,11 @@ kotlin {
 
 dependencies {
     implementation(libs.javax.inject)
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

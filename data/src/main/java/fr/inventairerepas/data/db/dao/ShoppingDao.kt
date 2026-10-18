@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import fr.inventairerepas.data.db.entity.ShoppingItemEntity
 import fr.inventairerepas.data.db.entity.ShoppingListEntity
+import fr.inventairerepas.data.db.relation.ShoppingItemWithIngredient
 import fr.inventairerepas.data.db.relation.ShoppingListWithItems
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -25,8 +26,9 @@ abstract class ShoppingDao {
     @Query("UPDATE shopping_item SET checked = :checked WHERE id = :itemId")
     abstract suspend fun setChecked(itemId: Long, checked: Boolean)
 
+    @Transaction
     @Query("SELECT * FROM shopping_item WHERE id = :itemId")
-    abstract suspend fun getItem(itemId: Long): ShoppingItemEntity?
+    abstract suspend fun getItemWithIngredient(itemId: Long): ShoppingItemWithIngredient?
 
     @Transaction
     @Query("SELECT * FROM shopping_list WHERE week_start = :weekStart ORDER BY block_index")
