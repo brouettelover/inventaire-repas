@@ -70,7 +70,6 @@ class ExportViewModel @Inject constructor(
         viewModelScope.launch {
             val account = settings.settings.first().googleAccountEmail
             when {
-                !GoogleAuth.isConfigured -> fallback("L'export Google Docs n'est pas encore configuré (identifiant client manquant).")
                 !network.isOnline() -> fallback("Pas de connexion internet.")
                 account == null -> fallback("Aucun compte Google connecté. Tu peux te connecter dans les réglages.")
                 else -> _state.update { it.copy(busy = true, authorizeAccount = account, fallbackReason = null) }

@@ -54,36 +54,13 @@ Variante avec `keytool` (fourni avec Android Studio) :
 3. Type d'application : **Android**.
 4. Nom du package : `fr.inventairerepas.app`
 5. Empreinte SHA-1 : colle celle de l'étape 4.
-6. Clique sur **Créer**. Rien à recopier dans le projet : Google reconnaît l'application grâce au package et à la SHA-1.
+6. Clique sur **Créer**. Rien à recopier dans le projet ni dans l'application : Google reconnaît l'application grâce au package et à la SHA-1. Aucun identifiant de type « Application Web » n'est nécessaire.
 
-## 6. Créer l'identifiant client Web
+## 6. Utilisation
 
-La connexion au compte (Credential Manager) a besoin d'un second identifiant, de type Web.
-
-1. **Créer des identifiants** → **ID client OAuth**.
-2. Type d'application : **Application Web**. Nom : `Inventaire repas (connexion)`. Laisse les URI vides.
-3. Clique sur **Créer** et copie l'**ID client** (il se termine par `.apps.googleusercontent.com`).
-
-## 7. Renseigner l'identifiant dans le projet
-
-Ouvre le fichier `local.properties` à la racine du projet (Android Studio le crée ; il n'est pas versionné) et ajoute :
-
-```properties
-google.webClientId=1234567890-abcdefg.apps.googleusercontent.com
-```
-
-Puis recompile et installe :
-
-```powershell
-.\gradlew.bat installDebug
-```
-
-## 8. Utilisation
-
-1. Dans l'application : **Réglages** → **Se connecter avec Google**, choisis ton compte.
+1. Dans l'application : **Réglages** → **Se connecter avec Google**, choisis ton compte et accepte l'accès demandé (création de fichiers dans ton Drive).
 2. Écran **Semaine** → icône de partage → coche si besoin « Inclure le détail des recettes » → **Google Docs**.
-3. À la première exportation, Google demande l'autorisation de créer des fichiers dans ton Drive. Accepte.
-4. Le document s'appelle « Menu du JJ/MM/AAAA au JJ/MM/AAAA ». Le bouton **Ouvrir** l'affiche.
+3. Le document s'appelle « Menu du JJ/MM/AAAA au JJ/MM/AAAA ». Le bouton **Ouvrir** l'affiche.
 
 Sans compte connecté, sans réseau ou en cas d'erreur, l'application propose de partager le même contenu en texte (WhatsApp, e-mail, Keep…).
 
@@ -93,7 +70,7 @@ Sans compte connecté, sans réseau ou en cas d'erreur, l'application propose de
 2. À chaque export, la case « Partager le Google Doc avec … » est cochée par défaut. Elle reçoit un e-mail de Google avec le lien et peut modifier le document (cocher les courses, par exemple).
 3. Si le partage échoue, le document est quand même créé et l'application l'indique. Tu peux alors le partager à la main depuis Google Docs.
 
-## 9. Recettes partagées entre deux téléphones
+## 7. Recettes partagées entre deux téléphones
 
 Les recettes sont échangées par un fichier `recettes-inventaire-repas.json` posé sur Google Drive. Aucune configuration de la Cloud Console n'est nécessaire : le fichier passe par le sélecteur de fichiers d'Android, comme une pièce jointe.
 
@@ -125,11 +102,10 @@ Le même fichier sert aussi de sauvegarde : tes recettes sont dans Drive même s
 
 | Symptôme | Cause probable |
 |---|---|
-| Erreur 10 / `DEVELOPER_ERROR` à la connexion | Le package ou la SHA-1 de l'identifiant Android ne correspond pas. Vérifie `fr.inventairerepas.app` et la SHA-1 du keystore réellement utilisé. |
+| Erreur 10 / `DEVELOPER_ERROR`, ou « Connexion impossible » | Le package ou la SHA-1 de l'identifiant Android ne correspond pas. Vérifie `fr.inventairerepas.app` et la SHA-1 du keystore réellement utilisé. |
 | « Accès bloqué : cette application n'a pas été validée » | Ton adresse n'est pas dans les utilisateurs tests (étape 3.5). |
 | « Google Docs API has not been used in project… » (403) | L'API Google Docs n'est pas activée (étape 2), ou l'activation date de moins de quelques minutes. |
-| Le bouton « Se connecter » est grisé | `google.webClientId` est absent de `local.properties`, ou le projet n'a pas été recompilé. |
 | « Google Drive API has not been used in project… » (403) au partage | L'API Google Drive n'est pas activée (étape 2.3). |
 | « Ce fichier est en lecture seule » à la synchronisation | Le fichier Drive est partagé en lecture seule : donne le rôle **Éditeur**. |
-| Le fichier partagé n'apparaît pas dans le sélecteur | Ajoute un raccourci dans **Mon Drive** depuis l'application Google Drive (étape 9). |
+| Le fichier partagé n'apparaît pas dans le sélecteur | Ajoute un raccourci dans **Mon Drive** depuis l'application Google Drive (étape 7). |
 | Ça marche sur un PC et pas sur un autre | Chaque PC a son propre keystore de debug : ajoute la SHA-1 de chaque machine (un identifiant Android par empreinte). |

@@ -26,5 +26,5 @@ L'export crée un Google Doc avec le menu de la semaine et les deux listes de co
 
 ## Recettes partagées
 
-L'écran Recettes exporte et importe les recettes dans un fichier JSON (par exemple sur Google Drive), et le bouton ⟳ synchronise ce fichier entre deux téléphones : la version modifiée le plus récemment gagne, les suppressions ne sont pas propagées. Mode d'emploi : section 9 de [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md).
+L'écran Recettes exporte et importe les recettes dans un fichier JSON (par exemple sur Google Drive), et le bouton ⟳ synchronise ce fichier entre deux téléphones : la version modifiée le plus récemment gagne, les suppressions ne sont pas propagées. Mode d'emploi : section 7 de [docs/CONFIGURATION_GOOGLE.md](docs/CONFIGURATION_GOOGLE.md).
 
