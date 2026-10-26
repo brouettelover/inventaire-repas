@@ -38,15 +38,12 @@ fun GoogleAccountSection(email: String?, onAccountChange: (String?) -> Unit) {
     }
 
     val consentLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
-            busy = false
-            return@rememberLauncherForActivityResult
-        }
+        // Même en cas d'échec, l'intent de retour contient le code d'erreur de Google : on le lit pour l'afficher.
         runCatching { Identity.getAuthorizationClient(context).getAuthorizationResultFromIntent(result.data) }
             .onSuccess(::finish)
             .onFailure {
                 busy = false
-                error = it.message
+                error = GoogleAuth.errorMessage(it, cancelled = result.resultCode != Activity.RESULT_OK)
             }
     }
 
@@ -70,7 +67,7 @@ fun GoogleAccountSection(email: String?, onAccountChange: (String?) -> Unit) {
                             }
                             .onFailure {
                                 busy = false
-                                error = "Connexion impossible : ${it.message}. Vérifie l'identifiant Android (package et SHA-1) dans la Cloud Console."
+                                error = GoogleAuth.errorMessage(it, cancelled = false)
                             }
                     }
                 },

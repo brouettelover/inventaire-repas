@@ -3,6 +3,8 @@ package fr.inventairerepas.ui.export
 import android.accounts.Account
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.Scope
 
 /**
@@ -30,6 +32,20 @@ object GoogleAuth {
             .setRequestedScopes(scopes)
             .setAccount(Account(email, "com.google"))
             .build()
+
+    /** Message lisible pour un échec de connexion, avec le code d'erreur de Google quand il existe. */
+    fun errorMessage(error: Throwable, cancelled: Boolean): String {
+        val code = (error as? ApiException)?.statusCode
+        return when (code) {
+            CommonStatusCodes.DEVELOPER_ERROR ->
+                "Connexion refusée par Google (erreur 10) : l'identifiant client Android est absent ou ne correspond pas. " +
+                    "Vérifie le package fr.inventairerepas.app et la SHA-1 dans la Cloud Console."
+            CommonStatusCodes.CANCELED -> "Connexion annulée."
+            CommonStatusCodes.NETWORK_ERROR -> "Pas de connexion internet."
+            null -> if (cancelled) "Connexion annulée ou refusée par Google." else "Connexion impossible : ${error.message}"
+            else -> "Connexion impossible (code Google $code) : ${error.message}"
+        }
+    }
 
     /** Adresse du compte autorisé, ou null si Google ne l'a pas fournie. */
     fun email(result: AuthorizationResult): String? = result.toGoogleSignInAccount()?.email
