@@ -6,6 +6,11 @@ import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.Scope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Authentification Google par l'Authorization API uniquement : seul l'identifiant client Android
@@ -47,6 +52,29 @@ object GoogleAuth {
         }
     }
 
-    /** Adresse du compte autorisé, ou null si Google ne l'a pas fournie. */
-    fun email(result: AuthorizationResult): String? = result.toGoogleSignInAccount()?.email
+    /**
+     * Adresse du compte autorisé. Google ne la place pas toujours dans le résultat d'autorisation :
+     * on la demande alors au service userinfo avec le jeton d'accès (portée « email »).
+     */
+    suspend fun email(result: AuthorizationResult): String? {
+        result.toGoogleSignInAccount()?.email?.let { return it }
+        val token = result.accessToken ?: return null
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val connection = URL(USERINFO_URL).openConnection() as HttpURLConnection
+                try {
+                    connection.connectTimeout = 15_000
+                    connection.readTimeout = 15_000
+                    connection.setRequestProperty("Authorization", "Bearer $token")
+                    if (connection.responseCode !in 200..299) return@runCatching null
+                    val body = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                    JSONObject(body).optString("email").takeIf { it.isNotBlank() }
+                } finally {
+                    connection.disconnect()
+                }
+            }.getOrNull()
+        }
+    }
+
+    private const val USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 }

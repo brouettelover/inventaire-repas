@@ -43,13 +43,15 @@ fun GoogleAccountSection(email: String?, onAccountChange: (String?) -> Unit) {
     var success by remember { mutableStateOf<String?>(null) }
 
     fun finish(result: AuthorizationResult) {
-        busy = false
-        val account = GoogleAuth.email(result)
-        if (account != null) {
-            onAccountChange(account)
-            success = "Connexion réussie. L'export Google Docs est prêt."
-        } else {
-            error = "Google n'a pas transmis l'adresse du compte."
+        scope.launch {
+            val account = GoogleAuth.email(result)
+            busy = false
+            if (account != null) {
+                onAccountChange(account)
+                success = "Connexion réussie. L'export Google Docs est prêt."
+            } else {
+                error = "Google n'a pas transmis l'adresse du compte. Vérifie ta connexion internet et réessaie."
+            }
         }
     }
 
