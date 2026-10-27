@@ -36,6 +36,7 @@ import fr.inventairerepas.ui.common.AppScaffold
 import fr.inventairerepas.ui.common.dayLabel
 import fr.inventairerepas.ui.common.formatMinutes
 import fr.inventairerepas.ui.common.label
+import fr.inventairerepas.ui.recipe.sync.DriveSyncBanner
 import fr.inventairerepas.ui.recipe.sync.RecipeSyncMenu
 import fr.inventairerepas.ui.recipe.sync.RecipeSyncViewModel
 
@@ -78,6 +79,9 @@ fun RecipeListScreen(
         },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding)) {
+            if (pickDate == null) {
+                item { DriveSyncBanner(syncState, syncViewModel) }
+            }
             item {
                 Filters(
                     state = state,

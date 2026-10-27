@@ -1,7 +1,6 @@
 package fr.inventairerepas.data.backup
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -14,32 +13,10 @@ class RecipeFileException(message: String, cause: Throwable? = null) : Exception
 
 /**
  * Lecture et écriture du fichier de recettes choisi avec le sélecteur de documents Android.
- * Fonctionne avec n'importe quel fournisseur : stockage local, Google Drive, etc.
+ * Fonctionne avec n'importe quel fournisseur : stockage local, Google Drive, etc. Sert aux sauvegardes ponctuelles.
  */
 @Singleton
 class RecipeFileStore @Inject constructor(@ApplicationContext private val context: Context) {
-
-    /** Garde l'accès au fichier après redémarrage du téléphone, pour « Synchroniser ». */
-    fun remember(uri: Uri) {
-        runCatching {
-            context.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
-        }.recoverCatching {
-            // Certains fournisseurs n'accordent que la lecture.
-            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-    }
-
-    fun forget(uri: Uri) {
-        runCatching {
-            context.contentResolver.releasePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
-        }
-    }
 
     suspend fun read(uri: Uri): String = withContext(Dispatchers.IO) {
         try {
@@ -65,13 +42,5 @@ class RecipeFileStore @Inject constructor(@ApplicationContext private val contex
         } catch (e: SecurityException) {
             throw RecipeFileException("Ce fichier est en lecture seule : demande l'accès en modification", e)
         }
-    }
-
-    /** Nom du fichier affiché à l'utilisateur, ou null s'il n'est plus accessible. */
-    suspend fun displayName(uri: Uri): String? = withContext(Dispatchers.IO) {
-        runCatching {
-            context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
-                ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
-        }.getOrNull()
     }
 }

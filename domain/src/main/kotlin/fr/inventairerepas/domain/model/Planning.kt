@@ -57,8 +57,8 @@ data class Settings(
     val googleAccountEmail: String? = null,
     /** Adresse Google avec qui partager chaque Google Doc exporté (modification autorisée) ; null = aucun partage. */
     val shareWithEmail: String? = null,
-    /** Fichier de recettes partagé choisi pour « Synchroniser » (URI de document Android) ; null = aucun. */
-    val recipesFileUri: String? = null,
+    /** Identifiant du dossier « recettes » sur Google Drive, trouvé ou créé à la première synchronisation. */
+    val driveFolderId: String? = null,
 ) {
     fun maxMinutesFor(day: DayOfWeek): Int? = maxMinutesByDay[day]
 }

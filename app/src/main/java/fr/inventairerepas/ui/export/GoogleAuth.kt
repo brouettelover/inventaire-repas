@@ -20,13 +20,16 @@ import java.net.URL
  */
 object GoogleAuth {
 
-    /** Portée minimale : l'application ne voit que les fichiers qu'elle crée dans le Drive. */
-    const val DOCS_SCOPE = "https://www.googleapis.com/auth/drive.file"
+    /**
+     * Accès à Google Drive : lire et modifier le dossier « recettes » (y compris les fichiers ajoutés à la main
+     * ou par une autre personne) et créer les Google Docs exportés.
+     */
+    const val DRIVE_SCOPE = "https://www.googleapis.com/auth/drive"
 
     /** Donne accès à l'adresse du compte choisi. */
     private const val EMAIL_SCOPE = "email"
 
-    private val scopes = listOf(Scope(DOCS_SCOPE), Scope(EMAIL_SCOPE))
+    private val scopes = listOf(Scope(DRIVE_SCOPE), Scope(EMAIL_SCOPE))
 
     /** Sans compte : Google affiche le sélecteur de compte. */
     fun signInRequest(): AuthorizationRequest =

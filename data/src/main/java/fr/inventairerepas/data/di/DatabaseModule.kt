@@ -35,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun provideShoppingDao(db: AppDatabase) = db.shoppingDao()
+
+    @Provides
+    fun provideDriveLinkDao(db: AppDatabase) = db.driveLinkDao()
 }

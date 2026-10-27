@@ -30,12 +30,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.inventairerepas.sync.DriveSyncState
 import fr.inventairerepas.ui.common.AppScaffold
 import fr.inventairerepas.ui.common.ServingsStepper
 import fr.inventairerepas.ui.common.formatMinutes
 import fr.inventairerepas.ui.common.label
 import fr.inventairerepas.ui.export.GoogleAccountSection
 import java.time.DayOfWeek
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 private val DURATION_OPTIONS: List<Int?> = listOf(null, 15, 20, 30, 45, 60, 90, 120)
 
@@ -93,12 +97,46 @@ fun SettingsScreen(
             HorizontalDivider()
             Text("Compte Google", style = MaterialTheme.typography.titleMedium)
             GoogleAccountSection(email = settings.googleAccountEmail, onAccountChange = viewModel::setGoogleAccount)
+            if (settings.googleAccountEmail != null) {
+                DriveRecipesSection(
+                    drive = state.drive,
+                    onSyncNow = viewModel::syncRecipesNow,
+                    onFindFolderAgain = viewModel::findDriveFolderAgain,
+                )
+            }
 
             HorizontalDivider()
             Text("Partage", style = MaterialTheme.typography.titleMedium)
             if (!state.loading) {
                 ShareEmailField(current = settings.shareWithEmail, onSave = viewModel::setShareWithEmail)
             }
+        }
+    }
+}
+
+/** État de la synchronisation des recettes avec le dossier Drive « recettes ». */
+@Composable
+private fun DriveRecipesSection(drive: DriveSyncState, onSyncNow: () -> Unit, onFindFolderAgain: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Recettes sur Google Drive", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Les recettes sont synchronisées avec le dossier « recettes » de ton Drive : un Google Doc par recette.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        val last = drive.lastSyncAt?.let {
+            DateTimeFormatter.ofPattern("HH:mm").format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
+        }
+        Text(
+            when {
+                drive.running -> "Synchronisation en cours…"
+                last != null -> "Dernière synchronisation à $last."
+                else -> "Pas encore synchronisé depuis l'ouverture de l'app."
+            },
+        )
+        drive.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(enabled = !drive.running, onClick = onSyncNow) { Text("Synchroniser") }
+            OutlinedButton(enabled = !drive.running, onClick = onFindFolderAgain) { Text("Rechercher le dossier") }
         }
     }
 }

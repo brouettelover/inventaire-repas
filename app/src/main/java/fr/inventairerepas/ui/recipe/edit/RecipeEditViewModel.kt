@@ -14,6 +14,7 @@ import fr.inventairerepas.domain.repository.IngredientRepository
 import fr.inventairerepas.domain.repository.RecipeRepository
 import fr.inventairerepas.domain.unit.MeasureUnit
 import fr.inventairerepas.domain.unit.Quantity
+import fr.inventairerepas.sync.RecipeDriveSync
 import fr.inventairerepas.ui.navigation.NEW_RECIPE
 import fr.inventairerepas.ui.navigation.RecipeEditRoute
 import fr.inventairerepas.ui.week.userMessage
@@ -56,6 +57,7 @@ class RecipeEditViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recipes: RecipeRepository,
     private val ingredients: IngredientRepository,
+    private val driveSync: RecipeDriveSync,
 ) : ViewModel() {
 
     private val recipeId = savedStateHandle.toRoute<RecipeEditRoute>().recipeId
@@ -176,7 +178,10 @@ class RecipeEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             runCatching { recipes.save(recipe) }
-                .onSuccess { _state.update { it.copy(done = true) } }
+                .onSuccess {
+                    driveSync.requestSync()
+                    _state.update { it.copy(done = true) }
+                }
                 .onFailure { error -> _state.update { it.copy(error = error.userMessage()) } }
         }
     }
@@ -185,7 +190,10 @@ class RecipeEditViewModel @Inject constructor(
         if (recipeId == NEW_RECIPE) return
         viewModelScope.launch {
             runCatching { recipes.delete(recipeId) }
-                .onSuccess { _state.update { it.copy(deleted = true) } }
+                .onSuccess {
+                    driveSync.requestSync()
+                    _state.update { it.copy(deleted = true) }
+                }
                 .onFailure { error -> _state.update { it.copy(error = error.userMessage()) } }
         }
     }

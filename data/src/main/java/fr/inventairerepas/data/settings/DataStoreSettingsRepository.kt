@@ -30,7 +30,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val defaultServings = intPreferencesKey("default_servings")
         val googleAccount = stringPreferencesKey("google_account")
         val shareWith = stringPreferencesKey("share_with_email")
-        val recipesFile = stringPreferencesKey("recipes_file_uri")
+        val driveFolder = stringPreferencesKey("drive_folder_id")
         fun maxMinutes(day: DayOfWeek) = intPreferencesKey("max_minutes_${day.name.lowercase()}")
     }
 
@@ -48,7 +48,7 @@ class DataStoreSettingsRepository @Inject constructor(
             }
             prefs.putOrRemove(Keys.googleAccount, updated.googleAccountEmail)
             prefs.putOrRemove(Keys.shareWith, updated.shareWithEmail?.trim()?.takeIf { it.isNotEmpty() })
-            prefs.putOrRemove(Keys.recipesFile, updated.recipesFileUri)
+            prefs.putOrRemove(Keys.driveFolder, updated.driveFolderId)
         }
     }
 
@@ -68,7 +68,7 @@ class DataStoreSettingsRepository @Inject constructor(
         },
         googleAccountEmail = this[Keys.googleAccount],
         shareWithEmail = this[Keys.shareWith],
-        recipesFileUri = this[Keys.recipesFile],
+        driveFolderId = this[Keys.driveFolder],
     )
 
     private companion object {

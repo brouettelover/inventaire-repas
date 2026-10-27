@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import fr.inventairerepas.data.repository.RoomDriveLinkRepository
 import fr.inventairerepas.data.repository.RoomIngredientRepository
 import fr.inventairerepas.data.repository.RoomPlanRepository
 import fr.inventairerepas.data.repository.RoomRecipeRepository
@@ -12,6 +13,7 @@ import fr.inventairerepas.data.repository.RoomShoppingRepository
 import fr.inventairerepas.data.repository.RoomStockRepository
 import fr.inventairerepas.data.repository.RoomTransactionRunner
 import fr.inventairerepas.data.settings.DataStoreSettingsRepository
+import fr.inventairerepas.domain.drive.DriveLinkRepository
 import fr.inventairerepas.domain.menu.MenuGenerator
 import fr.inventairerepas.domain.repository.IngredientRepository
 import fr.inventairerepas.domain.repository.PlanRepository
@@ -39,6 +41,8 @@ abstract class RepositoryModule {
     @Binds abstract fun settings(impl: DataStoreSettingsRepository): SettingsRepository
 
     @Binds abstract fun transactions(impl: RoomTransactionRunner): TransactionRunner
+
+    @Binds abstract fun driveLinks(impl: RoomDriveLinkRepository): DriveLinkRepository
 
     companion object {
         @Provides
