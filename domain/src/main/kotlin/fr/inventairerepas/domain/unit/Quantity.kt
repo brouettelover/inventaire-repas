@@ -4,6 +4,7 @@ package fr.inventairerepas.domain.unit
 data class Quantity(val amount: Double, val unit: MeasureUnit) {
 
     init {
+        require(amount.isFinite()) { "Quantité invalide : $amount" }
         require(amount >= 0.0) { "Une quantité ne peut pas être négative : $amount" }
     }
 

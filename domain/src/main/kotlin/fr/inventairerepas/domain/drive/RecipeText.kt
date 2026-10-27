@@ -78,7 +78,7 @@ object RecipeText {
                 runCatching {
                     when (key) {
                         "portions", "personnes" -> servings = value.filter(Char::isDigit).toIntOrNull()
-                            ?.takeIf { it > 0 } ?: error("nombre de portions invalide « $value »")
+                            ?.takeIf { it in 1..MAX_SERVINGS } ?: error("nombre de portions invalide « $value »")
                         "preparation" -> prep = parseMinutes(value)
                         "cuisson" -> cook = parseMinutes(value)
                         "fraicheur" -> freshness = parseFreshness(value)
@@ -114,6 +114,11 @@ object RecipeText {
 
     private const val DEFAULT_SERVINGS = 2
 
+    // Bornes de bon sens : un fichier partagé peut être modifié par une autre personne, ou abîmé.
+    private const val MAX_SERVINGS = 100
+    private const val MAX_MINUTES = 7 * 24 * 60
+    private const val MAX_AMOUNT = 1_000_000.0
+
     private fun sectionOf(line: String): Section? = when (normalize(line).trimEnd(':', ' ')) {
         "ingredients", "ingredient" -> Section.INGREDIENTS
         "etapes", "etape", "instructions", "preparation" -> Section.STEPS
@@ -145,11 +150,13 @@ object RecipeText {
     fun parseMinutes(value: String): Int {
         val v = normalize(value).replace(" ", "")
         if (v.isEmpty() || v == "0") return 0
-        Regex("""^(\d+)(?:min|mn|minutes?)?$""").matchEntire(v)?.let { return it.groupValues[1].toInt() }
-        Regex("""^(\d+)(?:h|heures?)(\d+)?(?:min|mn|minutes?)?$""").matchEntire(v)?.let {
-            return it.groupValues[1].toInt() * 60 + (it.groupValues[2].toIntOrNull() ?: 0)
-        }
-        error("durée invalide « $value » (exemples : 15 min, 1 h 30)")
+        val minutes = Regex("""^(\d{1,6})(?:min|mn|minutes?)?$""").matchEntire(v)?.let { it.groupValues[1].toLong() }
+            ?: Regex("""^(\d{1,4})(?:h|heures?)(\d{1,4})?(?:min|mn|minutes?)?$""").matchEntire(v)?.let {
+                it.groupValues[1].toLong() * 60 + (it.groupValues[2].toLongOrNull() ?: 0)
+            }
+            ?: error("durée invalide « $value » (exemples : 15 min, 1 h 30)")
+        require(minutes <= MAX_MINUTES) { "durée trop longue « $value »" }
+        return minutes.toInt()
     }
 
     // --- Fraîcheur et saison ------------------------------------------------------------------
@@ -231,7 +238,8 @@ object RecipeText {
             return RecipeIngredient(Ingredient(name = line), Quantity(1.0, MeasureUnit.PIECE))
         }
         val amount = parseAmount(match.groupValues[1])
-        require(amount > 0) { "quantité nulle" }
+        require(amount.isFinite() && amount > 0) { "quantité invalide" }
+        require(amount <= MAX_AMOUNT) { "quantité trop grande" }
         var rest = match.groupValues[2].trim()
         val normalizedRest = normalize(rest)
         val alias = UNIT_ALIASES.firstOrNull { (alias, _) ->

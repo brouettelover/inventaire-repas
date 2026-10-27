@@ -105,6 +105,19 @@ class RecipeTextTest {
     }
 
     @Test
+    fun `absurd values from a shared file are rejected`() {
+        listOf(
+            "Ingrédients\n- 1/0 g sucre",
+            "Ingrédients\n- 99999999 kg sucre",
+            "Cuisson : 99999999999 h",
+            "Cuisson : 2000 h",
+            "Portions : 100000",
+        ).forEach { text ->
+            assertThrows<InvalidRecipeTextException>(text) { RecipeText.parse("X", text) }
+        }
+    }
+
+    @Test
     fun `durations are formatted readably`() {
         assertEquals("0 min", RecipeText.formatMinutes(0))
         assertEquals("45 min", RecipeText.formatMinutes(45))
